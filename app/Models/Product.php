@@ -21,6 +21,7 @@ class Product extends Model
         'stock_quantity',
         'thumbnail',
         'status',
+        'is_featured',
     ];
 
     // Ye product kis category ka hai
@@ -58,4 +59,16 @@ class Product extends Model
     {
         return $this->hasMany(StockLog::class);
     }
+
+// Average rating calculate karna
+public function averageRating()
+{
+    return $this->approvedReviews()->avg('rating') ?? 0;
 }
+
+// Total approved reviews count
+public function reviewsCount()
+{
+    return $this->approvedReviews()->count();
+}
+    }
