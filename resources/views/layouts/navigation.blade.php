@@ -68,16 +68,32 @@
 
         
 
-        <li class="nav-item">
-            <a class="nav-link" href="#">
-                <i class="bi bi-heart"></i> Wishlist
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="#">
-                <i class="bi bi-cart3"></i> Cart
-            </a>
-        </li>
+       <li class="nav-item">
+    <a class="nav-link {{ request()->routeIs('wishlist.index') ? 'active fw-bold' : '' }}" href="{{ route('wishlist.index') }}">
+        <i class="bi bi-heart"></i> Wishlist
+        @auth
+            @php
+                $wishlistCount = \App\Models\Wishlist::where('user_id', auth()->id())->count();
+            @endphp
+            @if ($wishlistCount > 0)
+                <span class="badge bg-danger rounded-pill">{{ $wishlistCount }}</span>
+            @endif
+        @endauth
+    </a>
+</li>
+       <li class="nav-item">
+    <a class="nav-link {{ request()->routeIs('cart.index') ? 'active fw-bold' : '' }}" href="{{ route('cart.index') }}">
+        <i class="bi bi-cart3"></i> Cart
+        @auth
+            @php
+                $cartCount = \App\Models\Cart::where('user_id', auth()->id())->count();
+            @endphp
+            @if ($cartCount > 0)
+                <span class="badge bg-danger rounded-pill">{{ $cartCount }}</span>
+            @endif
+        @endauth
+    </a>
+</li>
     @endif
 </ul>
 

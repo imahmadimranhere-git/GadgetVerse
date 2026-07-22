@@ -1,12 +1,17 @@
 <x-app-layout>
 
+    <!-- Page Heading -->
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
-        <h2 class="fw-bold mb-0">📦 Products</h2>
+        <h2 class="fw-bold mb-0">
+            <i class="bi bi-box-seam me-2"></i> Products
+        </h2>
+
         <a href="{{ route('admin.products.create') }}" class="btn btn-primary">
             <i class="bi bi-plus-lg"></i> Add New Product
         </a>
     </div>
 
+    <!-- Success Message -->
     @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             {{ session('success') }}
@@ -14,8 +19,11 @@
         </div>
     @endif
 
+    <!-- Product List Card -->
     <div class="card border-0 shadow-sm">
         <div class="card-body">
+
+            <!-- Product Table -->
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
                     <thead class="table-light">
@@ -29,34 +37,60 @@
                             <th class="text-end">Actions</th>
                         </tr>
                     </thead>
+
                     <tbody>
+
+                        <!-- Agar products mojood hon -->
                         @forelse ($products as $product)
                             <tr>
+
+                                <!-- Product Image -->
                                 <td>
                                     <img src="{{ asset('storage/' . $product->thumbnail) }}"
                                          alt="{{ $product->name }}"
                                          class="rounded"
                                          style="width: 50px; height: 50px; object-fit: cover;">
                                 </td>
-                                <td class="fw-semibold">{{ $product->name }}</td>
-                                <td>{{ $product->category->name }}</td>
+
+                                <!-- Product Name -->
+                                <td class="fw-semibold">
+                                    {{ $product->name }}
+                                </td>
+
+                                <!-- Product Category -->
+                                <td>
+                                    {{ $product->category->name }}
+                                </td>
+
+                                <!-- Product Price -->
                                 <td>
                                     @if ($product->discount_price)
                                         <span class="text-decoration-line-through text-muted small">
                                             Rs {{ number_format($product->price) }}
                                         </span><br>
-                                        <span class="text-danger fw-bold">Rs {{ number_format($product->discount_price) }}</span>
+
+                                        <span class="text-danger fw-bold">
+                                            Rs {{ number_format($product->discount_price) }}
+                                        </span>
                                     @else
                                         Rs {{ number_format($product->price) }}
                                     @endif
                                 </td>
+
+                                <!-- Product Stock -->
                                 <td>
                                     @if ($product->stock_quantity <= 5)
-                                        <span class="badge bg-danger">{{ $product->stock_quantity }} left</span>
+                                        <span class="badge bg-danger">
+                                            {{ $product->stock_quantity }} left
+                                        </span>
                                     @else
-                                        <span class="badge bg-light text-dark">{{ $product->stock_quantity }}</span>
+                                        <span class="badge bg-light text-dark">
+                                            {{ $product->stock_quantity }}
+                                        </span>
                                     @endif
                                 </td>
+
+                                <!-- Product Status -->
                                 <td>
                                     @if ($product->status)
                                         <span class="badge bg-success">Active</span>
@@ -64,36 +98,53 @@
                                         <span class="badge bg-secondary">Inactive</span>
                                     @endif
                                 </td>
+
+                                <!-- Action Buttons -->
                                 <td class="text-end">
+
+                                    <!-- Edit Button -->
                                     <a href="{{ route('admin.products.edit', $product->id) }}"
                                        class="btn btn-sm btn-outline-primary">
                                         <i class="bi bi-pencil"></i>
                                     </a>
+
+                                    <!-- Delete Form -->
                                     <form action="{{ route('admin.products.destroy', $product->id) }}"
-                                          method="POST" class="d-inline"
-                                          onsubmit="return confirm('Kya aap is product ko delete karna chahte hain?');">
+                                          method="POST"
+                                          class="d-inline"
+                                          onsubmit="return confirm('Are you sure you want to delete this product?');">
+
                                         @csrf
                                         @method('DELETE')
+
                                         <button type="submit" class="btn btn-sm btn-outline-danger">
                                             <i class="bi bi-trash"></i>
                                         </button>
+
                                     </form>
+
                                 </td>
+
                             </tr>
+
+                        <!-- Agar koi product na ho -->
                         @empty
                             <tr>
                                 <td colspan="7" class="text-center text-muted py-4">
-                                    Koi product nahi mila. "Add New Product" pe click karein.
+                                    No products found. Click "Add New Product" to create one.
                                 </td>
                             </tr>
                         @endforelse
+
                     </tbody>
                 </table>
             </div>
 
+            <!-- Pagination -->
             <div class="mt-3">
                 {{ $products->links() }}
             </div>
+
         </div>
     </div>
 

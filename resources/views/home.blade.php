@@ -1,6 +1,6 @@
 <x-app-layout>
 
-    <!-- Banner Slider -->
+    <!-- Banner Slider (top ka carousel) -->
     @if ($banners->count() > 0)
         <div id="bannerCarousel" class="carousel slide mb-4 rounded overflow-hidden shadow-sm" data-bs-ride="carousel">
             <div class="carousel-indicators">
@@ -29,10 +29,10 @@
         </div>
     @endif
 
-    <!-- Featured Products -->
+    <!-- Featured Products (pasandeeda products) -->
     @if ($featuredProducts->count() > 0)
         <div class="mb-5">
-            <h4 class="fw-bold mb-3">⭐ Featured Products</h4>
+            <h4 class="fw-bold mb-3"><i class="bi bi-star-fill text-warning"></i> Featured Products</h4>
             <div class="row g-3">
                 @foreach ($featuredProducts as $product)
                     <div class="col-6 col-md-4 col-lg-3">
@@ -67,10 +67,10 @@
         </div>
     @endif
 
-    <!-- New Arrivals -->
+    <!-- New Arrivals (naye products) -->
     @if ($newArrivals->count() > 0)
         <div class="mb-5">
-            <h4 class="fw-bold mb-3">🆕 New Arrivals</h4>
+            <h4 class="fw-bold mb-3"><i class="bi bi-bag-plus-fill text-primary"></i> New Arrivals</h4>
             <div class="row g-3">
                 @foreach ($newArrivals as $product)
                     <div class="col-6 col-md-4 col-lg-3">
@@ -105,10 +105,11 @@
         </div>
     @endif
 
+    <!-- Empty State (jab banners aur products dono na hon) -->
     @if ($banners->count() === 0 && $featuredProducts->count() === 0 && $newArrivals->count() === 0)
         <div class="text-center py-5">
             <i class="bi bi-shop fs-1 text-muted"></i>
-            <p class="text-muted mt-3">Abhi koi products ya banners available nahi hain.</p>
+            <p class="text-muted mt-3">No products or banners are available right now.</p>
         </div>
     @endif
 

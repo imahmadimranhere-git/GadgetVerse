@@ -1,10 +1,14 @@
 <x-app-layout>
 
-    <h2 class="mb-4 fw-bold">📊 Admin Dashboard</h2>
+    <!-- Page Heading -->
+    <h2 class="mb-4 fw-bold">
+        <i class="bi bi-speedometer2 me-2"></i> Admin Dashboard
+    </h2>
 
-    <!-- Stats Cards Row -->
+    <!-- Statistics Cards Row -->
     <div class="row g-3 mb-4">
 
+        <!-- Total Sales Card -->
         <div class="col-6 col-md-3">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
@@ -19,6 +23,7 @@
             </div>
         </div>
 
+        <!-- Total Orders Card -->
         <div class="col-6 col-md-3">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
@@ -33,6 +38,7 @@
             </div>
         </div>
 
+        <!-- Total Customers Card -->
         <div class="col-6 col-md-3">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
@@ -47,6 +53,7 @@
             </div>
         </div>
 
+        <!-- Total Products Card -->
         <div class="col-6 col-md-3">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
@@ -63,9 +70,10 @@
 
     </div>
 
-    <!-- Chart + Recent Orders Row -->
+    <!-- Sales Chart Aur Recent Orders Row -->
     <div class="row g-3">
 
+        <!-- Sales Overview Card -->
         <div class="col-12 col-lg-7">
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
@@ -75,10 +83,12 @@
             </div>
         </div>
 
+        <!-- Recent Orders Card -->
         <div class="col-12 col-lg-5">
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <h5 class="fw-bold mb-3">Recent Orders</h5>
+
                     <div class="table-responsive">
                         <table class="table table-sm align-middle">
                             <thead>
@@ -88,23 +98,34 @@
                                     <th>Status</th>
                                 </tr>
                             </thead>
+
                             <tbody>
+
+                                <!-- Agar recent orders mojood hon -->
                                 @forelse ($recentOrders as $order)
                                     <tr>
                                         <td>{{ $order->order_number }}</td>
                                         <td>{{ $order->user->name }}</td>
                                         <td>
-                                            <span class="badge bg-secondary">{{ ucfirst($order->order_status) }}</span>
+                                            <span class="badge bg-secondary">
+                                                {{ ucfirst($order->order_status) }}
+                                            </span>
                                         </td>
                                     </tr>
+
+                                <!-- Agar koi order na ho -->
                                 @empty
                                     <tr>
-                                        <td colspan="3" class="text-center text-muted">No orders yet.</td>
+                                        <td colspan="3" class="text-center text-muted">
+                                            No orders yet.
+                                        </td>
                                     </tr>
                                 @endforelse
+
                             </tbody>
                         </table>
                     </div>
+
                 </div>
             </div>
         </div>
@@ -113,8 +134,11 @@
 
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+    <!-- Sales Chart Script -->
     <script>
         const ctx = document.getElementById('salesChart');
+
         new Chart(ctx, {
             type: 'line',
             data: {
@@ -131,7 +155,11 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } }
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
             }
         });
     </script>

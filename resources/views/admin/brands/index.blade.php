@@ -1,12 +1,17 @@
 <x-app-layout>
 
+    <!-- Page Heading -->
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
-        <h2 class="fw-bold mb-0">🏷️ Brands</h2>
+        <h2 class="fw-bold mb-0">
+            <i class="bi bi-tags me-2"></i> Brands
+        </h2>
+
         <a href="{{ route('admin.brands.create') }}" class="btn btn-primary">
             <i class="bi bi-plus-lg"></i> Add New Brand
         </a>
     </div>
 
+    <!-- Success Message -->
     @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             {{ session('success') }}
@@ -14,8 +19,11 @@
         </div>
     @endif
 
+    <!-- Brand List Card -->
     <div class="card border-0 shadow-sm">
         <div class="card-body">
+
+            <!-- Brand Table -->
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
                     <thead class="table-light">
@@ -26,9 +34,14 @@
                             <th class="text-end">Actions</th>
                         </tr>
                     </thead>
+
                     <tbody>
+
+                        <!-- Agar brands mojood hon -->
                         @forelse ($brands as $brand)
                             <tr>
+
+                                <!-- Brand Logo -->
                                 <td>
                                     @if ($brand->logo)
                                         <img src="{{ asset('storage/' . $brand->logo) }}"
@@ -42,7 +55,13 @@
                                         </div>
                                     @endif
                                 </td>
-                                <td class="fw-semibold">{{ $brand->name }}</td>
+
+                                <!-- Brand Name -->
+                                <td class="fw-semibold">
+                                    {{ $brand->name }}
+                                </td>
+
+                                <!-- Brand Status -->
                                 <td>
                                     @if ($brand->status)
                                         <span class="badge bg-success">Active</span>
@@ -50,36 +69,53 @@
                                         <span class="badge bg-secondary">Inactive</span>
                                     @endif
                                 </td>
+
+                                <!-- Action Buttons -->
                                 <td class="text-end">
+
+                                    <!-- Edit Button -->
                                     <a href="{{ route('admin.brands.edit', $brand->id) }}"
                                        class="btn btn-sm btn-outline-primary">
                                         <i class="bi bi-pencil"></i>
                                     </a>
+
+                                    <!-- Delete Form -->
                                     <form action="{{ route('admin.brands.destroy', $brand->id) }}"
-                                          method="POST" class="d-inline"
-                                          onsubmit="return confirm('Kya aap is brand ko delete karna chahte hain?');">
+                                          method="POST"
+                                          class="d-inline"
+                                          onsubmit="return confirm('Are you sure you want to delete this brand?');">
+
                                         @csrf
                                         @method('DELETE')
+
                                         <button type="submit" class="btn btn-sm btn-outline-danger">
                                             <i class="bi bi-trash"></i>
                                         </button>
+
                                     </form>
+
                                 </td>
+
                             </tr>
+
+                        <!-- Agar koi brand na ho -->
                         @empty
                             <tr>
                                 <td colspan="4" class="text-center text-muted py-4">
-                                    Koi brand nahi mila. "Add New Brand" pe click karein.
+                                    No brands found. Click "Add New Brand" to create one.
                                 </td>
                             </tr>
                         @endforelse
+
                     </tbody>
                 </table>
             </div>
 
+            <!-- Pagination -->
             <div class="mt-3">
                 {{ $brands->links() }}
             </div>
+
         </div>
     </div>
 
