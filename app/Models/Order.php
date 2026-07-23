@@ -36,4 +36,14 @@ class Order extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
+
+    // Unique order number generate karna
+public static function generateOrderNumber()
+{
+    $lastOrder = self::latest('id')->first();
+    $nextId = $lastOrder ? $lastOrder->id + 1 : 1;
+
+    return 'ORD-' . str_pad($nextId, 6, '0', STR_PAD_LEFT);
 }
+
+    }

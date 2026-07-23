@@ -51,6 +51,13 @@
     </a>
 </li>
 
+<li class="nav-item">
+    <a class="nav-link {{ request()->routeIs('admin.reviews.*') ? 'active fw-bold' : '' }}"
+       href="{{ route('admin.reviews.index') }}">
+        <i class="bi bi-star"></i> Reviews
+    </a>
+</li>
+
     @else
         <li class="nav-item">
             <a class="nav-link {{ request()->routeIs('dashboard') ? 'active fw-bold' : '' }}"
@@ -92,6 +99,13 @@
                 <span class="badge bg-danger rounded-pill">{{ $cartCount }}</span>
             @endif
         @endauth
+    </a>
+</li>
+
+{{-- Customer ke orders history ka link --}}
+<li class="nav-item">
+    <a class="nav-link {{ request()->routeIs('orders.*') ? 'active fw-bold' : '' }}" href="{{ route('orders.index') }}">
+        <i class="bi bi-bag-check"></i> My Orders
     </a>
 </li>
     @endif

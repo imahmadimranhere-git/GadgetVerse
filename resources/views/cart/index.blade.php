@@ -119,9 +119,9 @@
                             <span class="fw-bold fs-5">Rs {{ number_format($total) }}</span>
                         </div>
 
-                        <a href="#" class="btn btn-primary w-100">
-                            <i class="bi bi-bag-check me-1"></i>Proceed to Checkout
-                        </a>
+                        <a href="{{ route('checkout.index') }}" class="btn btn-primary w-100">
+    <i class="bi bi-bag-check"></i> Proceed to Checkout
+</a>
 
                         <a href="{{ route('products.index') }}" class="btn btn-light w-100 mt-2">
                             <i class="bi bi-arrow-left-circle me-1"></i>Continue Shopping
