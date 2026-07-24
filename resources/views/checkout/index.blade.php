@@ -1,9 +1,9 @@
 <x-app-layout>
 
-    {{-- Page ka heading, cart/shopping bag icon ke sath --}}
-    <h2 class="fw-bold mb-4"><i class="bi bi-bag-check"></i> Checkout</h2>
+    <h2 class="fw-bold mb-4">
+        <i class="bi bi-bag-check"></i> Checkout
+    </h2>
 
-    {{-- Agar koi error session mai aya hai to usay dismissible alert mai show karain --}}
     @if (session('error'))
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             {{ session('error') }}
@@ -11,21 +11,26 @@
         </div>
     @endif
 
-    {{-- Checkout form, jo order place karne ke route par POST karega --}}
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
     <form action="{{ route('checkout.store') }}" method="POST">
         @csrf
 
         <div class="row g-4">
 
-            <!-- Left: Address + Payment -->
             <div class="col-12 col-lg-8">
 
-                <!-- Address Selection -->
                 <div class="card border-0 shadow-sm mb-3">
                     <div class="card-body">
-                        <h5 class="fw-bold mb-3"><i class="bi bi-geo-alt"></i> Delivery Address</h5>
+                        <h5 class="fw-bold mb-3">
+                            <i class="bi bi-geo-alt"></i> Delivery Address
+                        </h5>
 
-                        {{-- Agar user ke pehle se saved addresses hain to unhain radio list ki tarah dikhain --}}
                         @if ($addresses->count() > 0)
                             @foreach ($addresses as $address)
                                 <div class="form-check border rounded p-3 mb-2">
@@ -39,18 +44,15 @@
                                 </div>
                             @endforeach
 
-                            {{-- Naya address add karne ka option, click karne par new address form show hoga --}}
                             <div class="form-check border rounded p-3 mb-2">
                                 <input class="form-check-input" type="radio" name="address_id"
                                        id="newAddress" value="" onclick="document.getElementById('newAddressForm').classList.remove('d-none')">
                                 <label class="form-check-label" for="newAddress">
-                                    <strong><i class="bi bi-plus-circle"></i> Add New Address</strong>
+                                    <strong>+ Add New Address</strong>
                                 </label>
                             </div>
                         @endif
 
-                        <!-- New Address Form -->
-                        {{-- Agar koi saved address nahi hai to yeh form directly show hoga, warna hidden rahega --}}
                         <div id="newAddressForm" class="{{ $addresses->count() > 0 ? 'd-none' : '' }} mt-3 border-top pt-3">
                             <div class="row g-3">
                                 <div class="col-12 col-md-6">
@@ -82,20 +84,18 @@
                     </div>
                 </div>
 
-                <!-- Payment Method -->
                 <div class="card border-0 shadow-sm">
                     <div class="card-body">
-                        <h5 class="fw-bold mb-3"><i class="bi bi-credit-card"></i> Payment Method</h5>
+                        <h5 class="fw-bold mb-3">
+                            <i class="bi bi-credit-card"></i> Payment Method
+                        </h5>
 
-                        {{-- Cash on delivery, ye default selected option hai --}}
                         <div class="form-check border rounded p-3 mb-2">
                             <input class="form-check-input" type="radio" name="payment_method" id="cod" value="cod" checked>
                             <label class="form-check-label" for="cod">
                                 <i class="bi bi-cash"></i> Cash on Delivery (COD)
                             </label>
                         </div>
-
-                        {{-- Mobile wallet options --}}
                         <div class="form-check border rounded p-3 mb-2">
                             <input class="form-check-input" type="radio" name="payment_method" id="jazzcash" value="jazzcash">
                             <label class="form-check-label" for="jazzcash">
@@ -108,16 +108,12 @@
                                 <i class="bi bi-phone"></i> EasyPaisa
                             </label>
                         </div>
-
-                        {{-- Card payment via Stripe --}}
                         <div class="form-check border rounded p-3">
                             <input class="form-check-input" type="radio" name="payment_method" id="stripe" value="stripe">
                             <label class="form-check-label" for="stripe">
-                                <i class="bi bi-credit-card"></i> Credit/Debit Card (Stripe)
+                                <i class="bi bi-credit-card-2-front"></i> Credit/Debit Card (Stripe)
                             </label>
                         </div>
-
-                        {{-- Payment method ki validation error yahan show hogi --}}
                         @error('payment_method')
                             <div class="text-danger small mt-2">{{ $message }}</div>
                         @enderror
@@ -126,13 +122,11 @@
 
             </div>
 
-            <!-- Right: Order Summary -->
             <div class="col-12 col-lg-4">
                 <div class="card border-0 shadow-sm">
                     <div class="card-body">
                         <h5 class="fw-bold mb-3">Order Summary</h5>
 
-                        {{-- Cart mai jitne items hain, un sab ko loop kar ke price ke sath list karain --}}
                         @foreach ($cartItems as $item)
                             @php $price = $item->product->discount_price ?? $item->product->price; @endphp
                             <div class="d-flex justify-content-between mb-2 small">
@@ -142,13 +136,49 @@
                         @endforeach
 
                         <hr>
-                        {{-- Grand total show karain --}}
+
+                        {{-- Coupon apply karne ka section --}}
+                        @if ($appliedCoupon)
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="small">
+                                    <i class="bi bi-ticket-perforated-fill text-success"></i>
+                                    <strong>{{ $appliedCoupon['code'] }}</strong> applied
+                                </span>
+                                <form action="{{ route('checkout.removeCoupon') }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-link text-danger p-0">Remove</button>
+                                </form>
+                            </div>
+                        @else
+                            <div class="mb-2">
+                                <label class="form-label small">Have a coupon code?</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" id="couponCodeField" class="form-control" placeholder="Enter coupon code">
+                                    <button type="button" id="applyCouponBtn" class="btn btn-outline-primary">Apply</button>
+                                </div>
+                            </div>
+                        @endif
+
+                        <hr>
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Subtotal</span>
+                            <span class="small">Rs {{ number_format($subtotal) }}</span>
+                        </div>
+
+                        @if ($discount > 0)
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted small">Discount</span>
+                                <span class="small text-success">- Rs {{ number_format($discount) }}</span>
+                            </div>
+                        @endif
+
+                        <hr>
                         <div class="d-flex justify-content-between mb-3">
                             <span class="fw-bold">Total</span>
                             <span class="fw-bold fs-5">Rs {{ number_format($total) }}</span>
                         </div>
 
-                        {{-- Order place karne ka submit button --}}
                         <button type="submit" class="btn btn-primary w-100">
                             <i class="bi bi-check-circle"></i> Place Order
                         </button>
@@ -158,5 +188,20 @@
 
         </div>
     </form>
+
+    {{-- Coupon apply karne ke liye ek chota hidden form, JS se submit hoga --}}
+    <form id="applyCouponForm" action="{{ route('checkout.applyCoupon') }}" method="POST" class="d-none">
+        @csrf
+        <input type="hidden" name="coupon_code" id="hiddenCouponCode">
+    </form>
+
+    <script>
+        // Apply button click hone pe hidden form submit karna
+        document.getElementById('applyCouponBtn')?.addEventListener('click', function () {
+            const code = document.getElementById('couponCodeField').value;
+            document.getElementById('hiddenCouponCode').value = code;
+            document.getElementById('applyCouponForm').submit();
+        });
+    </script>
 
 </x-app-layout>

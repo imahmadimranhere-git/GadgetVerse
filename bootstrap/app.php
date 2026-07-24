@@ -16,10 +16,14 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->alias([
-            'admin' => \App\Http\Middleware\AdminMiddleware::class,
-        ]);
-    })
+    $middleware->alias([
+        'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        'check.blocked' => \App\Http\Middleware\CheckBlockedUser::class,
+    ]);
+
+    // Har authenticated request pe ye middleware chale
+    $middleware->appendToGroup('web', \App\Http\Middleware\CheckBlockedUser::class);
+})
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();

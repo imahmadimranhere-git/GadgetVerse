@@ -25,6 +25,14 @@
                 <i class="bi bi-speedometer2"></i> Dashboard
             </a>
         </li>
+
+<li class="nav-item">
+    <a class="nav-link {{ request()->routeIs('admin.orders.*') ? 'active fw-bold' : '' }}"
+       href="{{ route('admin.orders.index') }}">
+        <i class="bi bi-bag-check"></i> Orders
+    </a>
+</li>
+
         <li class="nav-item">
             <a class="nav-link {{ request()->routeIs('admin.categories.*') ? 'active fw-bold' : '' }}"
                href="{{ route('admin.categories.index') }}">
@@ -44,6 +52,13 @@
             </a>
         </li>
 
+<li class="nav-item">
+    <a class="nav-link {{ request()->routeIs('admin.inventory.*') ? 'active fw-bold' : '' }}"
+       href="{{ route('admin.inventory.index') }}">
+        <i class="bi bi-clipboard-data"></i> Inventory
+    </a>
+</li>
+
         <li class="nav-item">
     <a class="nav-link {{ request()->routeIs('admin.banners.*') ? 'active fw-bold' : '' }}"
        href="{{ route('admin.banners.index') }}">
@@ -55,6 +70,20 @@
     <a class="nav-link {{ request()->routeIs('admin.reviews.*') ? 'active fw-bold' : '' }}"
        href="{{ route('admin.reviews.index') }}">
         <i class="bi bi-star"></i> Reviews
+    </a>
+</li>
+
+<li class="nav-item">
+    <a class="nav-link {{ request()->routeIs('admin.customers.*') ? 'active fw-bold' : '' }}"
+       href="{{ route('admin.customers.index') }}">
+        <i class="bi bi-people"></i> Customers
+    </a>
+</li>
+
+<li class="nav-item">
+    <a class="nav-link {{ request()->routeIs('admin.coupons.*') ? 'active fw-bold' : '' }}"
+       href="{{ route('admin.coupons.index') }}">
+        <i class="bi bi-ticket-perforated"></i> Coupons
     </a>
 </li>
 

@@ -6,6 +6,7 @@ use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Address;
+use App\Models\Coupon;
 use App\Models\StockLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,19 +18,71 @@ class CheckoutController extends Controller
     {
         $cartItems = Cart::with('product')->where('user_id', auth()->id())->get();
 
-        // Agar cart khali hai, checkout pe ane ka koi faida nahi
         if ($cartItems->isEmpty()) {
-            return redirect()->route('cart.index')->with('error', 'Aapka cart khali hai.');
+            return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
         }
 
         $addresses = Address::where('user_id', auth()->id())->get();
 
-        $total = $cartItems->sum(function ($item) {
+        $subtotal = $cartItems->sum(function ($item) {
             $price = $item->product->discount_price ?? $item->product->price;
             return $price * $item->quantity;
         });
 
-        return view('checkout.index', compact('cartItems', 'addresses', 'total'));
+        // Session mein coupon hai to discount calculate karna
+        $discount = 0;
+        $appliedCoupon = null;
+
+        if (session()->has('coupon')) {
+            $appliedCoupon = session('coupon');
+            $discount = $this->calculateDiscount($appliedCoupon, $subtotal);
+        }
+
+        $total = $subtotal - $discount;
+
+        return view('checkout.index', compact('cartItems', 'addresses', 'subtotal', 'discount', 'total', 'appliedCoupon'));
+    }
+
+    // Coupon apply karna
+    public function applyCoupon(Request $request)
+    {
+        $validated = $request->validate([
+            'coupon_code' => 'required|string',
+        ]);
+
+        $coupon = Coupon::where('code', strtoupper($validated['coupon_code']))->first();
+
+        // Coupon exist karta hai?
+        if (!$coupon) {
+            return back()->with('error', 'Invalid coupon code.');
+        }
+
+        // Coupon active hai?
+        if (!$coupon->status) {
+            return back()->with('error', 'This coupon is no longer active.');
+        }
+
+        // Coupon expire to nahi hua?
+        if (\Carbon\Carbon::parse($coupon->expiry_date)->isPast()) {
+            return back()->with('error', 'This coupon has expired.');
+        }
+
+        // Session mein coupon store karna
+        session(['coupon' => [
+            'code' => $coupon->code,
+            'discount_type' => $coupon->discount_type,
+            'discount_value' => $coupon->discount_value,
+        ]]);
+
+        return back()->with('success', 'Coupon applied successfully!');
+    }
+
+    // Coupon remove karna
+    public function removeCoupon()
+    {
+        session()->forget('coupon');
+
+        return back()->with('success', 'Coupon removed.');
     }
 
     // Order place karna
@@ -37,7 +90,6 @@ class CheckoutController extends Controller
     {
         $validated = $request->validate([
             'address_id' => 'nullable|exists:addresses,id',
-            // Naya address (agar user naya address add kar raha hai)
             'full_name' => 'required_without:address_id|string|max:255',
             'phone' => 'required_without:address_id|string|max:20',
             'address_line' => 'required_without:address_id|string|max:255',
@@ -49,19 +101,32 @@ class CheckoutController extends Controller
         $cartItems = Cart::with('product')->where('user_id', auth()->id())->get();
 
         if ($cartItems->isEmpty()) {
-            return redirect()->route('cart.index')->with('error', 'Aapka cart khali hai.');
+            return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
         }
 
-        // Stock Verify Karna (Checkout se pehle final check)
         foreach ($cartItems as $item) {
             if ($item->product->stock_quantity < $item->quantity) {
-                return back()->with('error', "Maazrat, '{$item->product->name}' ka stock kam hai.");
+                return back()->with('error', "Sorry, '{$item->product->name}' does not have enough stock.");
             }
         }
 
-        $order = DB::transaction(function () use ($validated, $cartItems, $request) {
+        // Coupon discount calculate karna (agar session mein hai)
+        $subtotal = $cartItems->sum(function ($item) {
+            $price = $item->product->discount_price ?? $item->product->price;
+            return $price * $item->quantity;
+        });
 
-            // Address: Ya existing use karo, ya naya banao
+        $discount = 0;
+        $couponCode = null;
+
+        if (session()->has('coupon')) {
+            $appliedCoupon = session('coupon');
+            $discount = $this->calculateDiscount($appliedCoupon, $subtotal);
+            $couponCode = $appliedCoupon['code'];
+        }
+
+        $order = DB::transaction(function () use ($validated, $cartItems, $request, $subtotal, $discount, $couponCode) {
+
             if ($request->filled('address_id')) {
                 $addressId = $validated['address_id'];
             } else {
@@ -76,24 +141,20 @@ class CheckoutController extends Controller
                 $addressId = $address->id;
             }
 
-            // Total Amount Calculate Karna
-            $totalAmount = $cartItems->sum(function ($item) {
-                $price = $item->product->discount_price ?? $item->product->price;
-                return $price * $item->quantity;
-            });
+            $totalAmount = $subtotal - $discount;
 
-            // Order Banana
             $order = Order::create([
                 'user_id' => auth()->id(),
                 'address_id' => $addressId,
                 'order_number' => Order::generateOrderNumber(),
                 'total_amount' => $totalAmount,
                 'payment_method' => $validated['payment_method'],
-                'payment_status' => $validated['payment_method'] === 'cod' ? 'pending' : 'pending',
+                'payment_status' => 'pending',
                 'order_status' => 'pending',
+                'coupon_code' => $couponCode,
+                'discount_amount' => $discount,
             ]);
 
-            // Har Cart Item Ko Order Item Mein Convert Karna
             foreach ($cartItems as $item) {
                 $price = $item->product->discount_price ?? $item->product->price;
 
@@ -104,10 +165,8 @@ class CheckoutController extends Controller
                     'price' => $price,
                 ]);
 
-                // Product Ka Stock Kam Karna
                 $item->product->decrement('stock_quantity', $item->quantity);
 
-                // Stock Log Banana
                 StockLog::create([
                     'product_id' => $item->product_id,
                     'type' => 'out',
@@ -116,13 +175,25 @@ class CheckoutController extends Controller
                 ]);
             }
 
-            // Cart Khali Karna
             Cart::where('user_id', auth()->id())->delete();
 
             return $order;
         });
 
+        // Order place hone ke baad coupon session se hata dena
+        session()->forget('coupon');
+
         return redirect()->route('orders.confirmation', $order->id)
-            ->with('success', 'Aapka order successfully place ho gaya!');
+            ->with('success', 'Your order has been placed successfully!');
+    }
+
+    // Discount calculate karne ka helper method
+    private function calculateDiscount(array $coupon, float $subtotal): float
+    {
+        if ($coupon['discount_type'] === 'percentage') {
+            return $subtotal * ($coupon['discount_value'] / 100);
+        }
+
+        return min($coupon['discount_value'], $subtotal);
     }
 }

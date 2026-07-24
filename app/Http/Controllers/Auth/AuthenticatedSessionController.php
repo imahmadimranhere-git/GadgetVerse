@@ -28,6 +28,17 @@ class AuthenticatedSessionController extends Controller
 
     $request->session()->regenerate();
 
+    // Check karna: kya ye user blocked hai?
+    if ($request->user()->is_blocked) {
+        auth()->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login')->withErrors([
+            'email' => 'Your account has been blocked. Please contact support.',
+        ]);
+    }
+
     if ($request->user()->hasRole('admin')) {
         return redirect()->intended(route('admin.dashboard', absolute: false));
     }
